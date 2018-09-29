@@ -132,6 +132,21 @@ class GetNumberOfPlayersWorker : public SteamCallbackAsyncWorker {
   CCallResult<GetNumberOfPlayersWorker, NumberOfCurrentPlayers_t> call_result_;
 };
 
+class GetStoreAuthURLWorker : public SteamCallbackAsyncWorker {
+ public:
+  GetStoreAuthURLWorker(Nan::Callback* success_callback,
+                        Nan::Callback* error_callback,
+                        const std::string& url);
+  void OnGetStoreAuthURLCompleted(StoreAuthURLResponse_t* result,
+                                     bool io_failure);
+  void Execute() override;
+  void HandleOKCallback() override;
+
+ private:
+  std::string store_auth_url_;
+  CCallResult<GetStoreAuthURLWorker, StoreAuthURLResponse_t> call_result_;
+};
+
 class CreateArchiveWorker : public SteamAsyncWorker {
  public:
   CreateArchiveWorker(Nan::Callback* success_callback,

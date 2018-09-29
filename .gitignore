@@ -13,3 +13,5 @@ steam_appid.txt
 *.node
 .DS_Store
 npm-debug.log
+yarn-error.log
+.vscode

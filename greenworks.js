@@ -5,24 +5,13 @@
 // The source code can be found in https://github.com/greenheartgames/greenworks
 var fs = require('fs');
 
-var greenworks;
+var platform = process.platform === 'darwin' ? 'osx'
+             : process.platform === 'win32'  ? 'win'
+             : 'linux'
 
-if (process.platform == 'darwin') {
-  if (process.arch == 'x64')
-    greenworks = require('./lib/greenworks-osx64');
-  else if (process.arch == 'ia32')
-    greenworks = require('./lib/greenworks-osx32');
-} else if (process.platform == 'win32') {
-  if (process.arch == 'x64')
-    greenworks = require('./lib/greenworks-win64');
-  else if (process.arch == 'ia32')
-    greenworks = require('./lib/greenworks-win32');
-} else if (process.platform == 'linux') {
-  if (process.arch == 'x64')
-    greenworks = require('./lib/greenworks-linux64');
-  else if (process.arch == 'ia32')
-    greenworks = require('./lib/greenworks-linux32');
-}
+var arch = process.arch === 'x64' ? '64' : '32'
+
+var greenworks = require('./lib/greenworks-' + platform + arch + '.node');
 
 function error_process(err, error_callback) {
   if (err && error_callback)

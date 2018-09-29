@@ -6,7 +6,7 @@ var assert = require("assert");
 var greenworks = require('../greenworks');
 
 describe('greenworks API', function() {
-  if (!greenworks.initAPI()) {
+  if (!greenworks.init()) {
     console.log('An error occured initializing Steam API.');
     process.exit(1);
   }
@@ -67,6 +67,16 @@ describe('greenworks API', function() {
       }, function(err) { throw err; }));
     });
   });
+
+  describe('getStoreAuthURL', function() {
+    it('Should get successfully', function(done) {
+      greenworks.getStoreAuthURL("test_url", function(url) {
+        assert(url);
+        console.log(url)
+        done()
+      }, function(err) { throw err; done(); })
+    });
+  })
 
   describe('getAuthSessionTicket', function() {
     it('Should get successfully', function(done) {

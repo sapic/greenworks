@@ -182,6 +182,24 @@ NAN_METHOD(GetNumberOfPlayers) {
   info.GetReturnValue().Set(Nan::Undefined());
 }
 
+NAN_METHOD(GetStoreAuthURL) {
+  Nan::HandleScope scope;
+  if (info.Length() < 2 || !info[0]->IsString() || !info[1]->IsFunction()) {
+    THROW_BAD_ARGS("Bad arguments");
+  }
+
+  std::string url = (*(v8::String::Utf8Value(info[0])));
+  Nan::Callback* success_callback =
+      new Nan::Callback(info[1].As<v8::Function>());
+  Nan::Callback* error_callback = nullptr;
+
+  if (info.Length() > 2 && info[2]->IsFunction())
+    error_callback = new Nan::Callback(info[2].As<v8::Function>());
+  Nan::AsyncQueueWorker(new greenworks::GetStoreAuthURLWorker(
+      success_callback, error_callback, url));
+  info.GetReturnValue().Set(Nan::Undefined());
+}
+
 NAN_METHOD(IsGameOverlayEnabled) {
   Nan::HandleScope scope;
   info.GetReturnValue().Set(Nan::New(SteamUtils()->IsOverlayEnabled()));
@@ -295,6 +313,9 @@ void RegisterAPIs(v8::Handle<v8::Object> exports) {
   Nan::Set(exports,
            Nan::New("getNumberOfPlayers").ToLocalChecked(),
            Nan::New<v8::FunctionTemplate>(GetNumberOfPlayers)->GetFunction());
+  Nan::Set(exports,
+           Nan::New("getStoreAuthURL").ToLocalChecked(),
+           Nan::New<v8::FunctionTemplate>(GetStoreAuthURL)->GetFunction());
   Nan::Set(exports,
            Nan::New("isGameOverlayEnabled").ToLocalChecked(),
            Nan::New<v8::FunctionTemplate>(IsGameOverlayEnabled)->GetFunction());

@@ -224,6 +224,23 @@ GetNumberOfPlayersWorker::GetNumberOfPlayersWorker(
         num_of_players_(-1) {
 }
 
+GetStoreAuthURLWorker::GetStoreAuthURLWorker(
+   Nan::Callback* success_callback,
+   Nan::Callback* error_callback,
+   const std::string& url)
+       :SteamCallbackAsyncWorker(success_callback, error_callback),
+        store_auth_url_(url) {
+}
+
+void GetStoreAuthURLWorker::Execute() {
+  SteamAPICall_t steam_api_call = SteamUser()->RequestStoreAuthURL(
+                                                store_auth_url_.c_str());
+  call_result_.Set(steam_api_call, this,
+      &GetStoreAuthURLWorker::OnGetStoreAuthURLCompleted);
+
+  WaitForCompleted();
+}
+
 void GetNumberOfPlayersWorker::Execute() {
   SteamAPICall_t steam_api_call = SteamUserStats()->GetNumberOfCurrentPlayers();
   call_result_.Set(steam_api_call, this,
@@ -242,6 +259,25 @@ void GetNumberOfPlayersWorker::OnGetNumberOfPlayersCompleted(
     SetErrorMessage("Error on getting number of players.");
   }
   is_completed_ = true;
+}
+
+void GetStoreAuthURLWorker::OnGetStoreAuthURLCompleted(
+    StoreAuthURLResponse_t* result, bool io_failure) {
+  if (io_failure) {
+    SetErrorMessage("Error on getting number of players: Steam API IO Failure");
+  } else if (result->m_szURL) {
+    store_auth_url_ = result->m_szURL;
+  } else {
+    SetErrorMessage("Error on getting number of players.");
+  }
+  is_completed_ = true;
+}
+
+void GetStoreAuthURLWorker::HandleOKCallback() {
+  Nan::HandleScope scope;
+
+  v8::Local<v8::Value> argv[] = { Nan::New(store_auth_url_).ToLocalChecked() };
+  callback->Call(1, argv);
 }
 
 void GetNumberOfPlayersWorker::HandleOKCallback() {
