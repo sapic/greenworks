@@ -16,7 +16,7 @@ namespace greenworks {
 namespace api {
 namespace {
 
-void InitFriendFlags(v8::Handle<v8::Object> exports) {
+void InitFriendFlags(v8::Local<v8::Object> exports) {
   v8::Local<v8::Object> friend_flags = Nan::New<v8::Object>();
   SET_TYPE(friend_flags, "None", k_EFriendFlagNone);
   SET_TYPE(friend_flags, "Blocked", k_EFriendFlagBlocked);
@@ -41,7 +41,7 @@ void InitFriendFlags(v8::Handle<v8::Object> exports) {
            friend_flags);
 }
 
-void InitFriendRelationship(v8::Handle<v8::Object> exports) {
+void InitFriendRelationship(v8::Local<v8::Object> exports) {
   v8::Local<v8::Object> relationship = Nan::New<v8::Object>();
   SET_TYPE(relationship, "None", k_EFriendRelationshipNone);
   SET_TYPE(relationship, "Blocked", k_EFriendRelationshipBlocked);
@@ -61,7 +61,7 @@ void InitFriendRelationship(v8::Handle<v8::Object> exports) {
            relationship);
 }
 
-void InitFriendPersonaChange(v8::Handle<v8::Object> exports) {
+void InitFriendPersonaChange(v8::Local<v8::Object> exports) {
   v8::Local<v8::Object> persona_change = Nan::New<v8::Object>();
   SET_TYPE(persona_change, "Name", k_EPersonaChangeName);
   SET_TYPE(persona_change, "Status", k_EPersonaChangeStatus);
@@ -85,7 +85,7 @@ void InitFriendPersonaChange(v8::Handle<v8::Object> exports) {
            persona_change);
 }
 
-void InitAccountType(v8::Handle<v8::Object> exports) {
+void InitAccountType(v8::Local<v8::Object> exports) {
   v8::Local<v8::Object> account_type = Nan::New<v8::Object>();
   SET_TYPE(account_type, "Invalid", k_EAccountTypeInvalid);
   SET_TYPE(account_type, "Individual", k_EAccountTypeIndividual);
@@ -105,7 +105,7 @@ void InitAccountType(v8::Handle<v8::Object> exports) {
            account_type);
 }
 
-void InitChatEntryType(v8::Handle<v8::Object> exports) {
+void InitChatEntryType(v8::Local<v8::Object> exports) {
   v8::Local<v8::Object> chat_entry_type = Nan::New<v8::Object>();
   SET_TYPE(chat_entry_type, "Invalid", k_EChatEntryTypeInvalid);
   SET_TYPE(chat_entry_type, "ChatMsg", k_EChatEntryTypeChatMsg);
@@ -149,7 +149,7 @@ NAN_METHOD(GetFriends) {
 
   for (int i = 0; i < friends_count; ++i) {
     CSteamID steam_id = SteamFriends()->GetFriendByIndex(i, friend_flag);
-    friends->Set(i, greenworks::SteamID::Create(steam_id));
+    Nan::Set(friends, i, greenworks::SteamID::Create(steam_id));
   }
   info.GetReturnValue().Set(friends);
 }
@@ -207,7 +207,8 @@ NAN_METHOD(RequestUserInformation) {
   if (!steam_id.IsValid()) {
     THROW_BAD_ARGS("Steam ID is invalid");
   }
-  SteamFriends()->RequestUserInformation(steam_id, require_name_only);
+  info.GetReturnValue().Set(
+      SteamFriends()->RequestUserInformation(steam_id, require_name_only));
 }
 
 NAN_METHOD(SetListenForFriendsMessages) {
@@ -258,46 +259,29 @@ NAN_METHOD(GetFriendMessage) {
       maximam_size, &chat_type);
 
   v8::Local<v8::Object> result = Nan::New<v8::Object>();
-  result->Set(Nan::New("message").ToLocalChecked(),
-              Nan::New(message.get(), message_size).ToLocalChecked());
-  result->Set(Nan::New("chatEntryType").ToLocalChecked(),
-              Nan::New(chat_type));
+  Nan::Set(result, Nan::New("message").ToLocalChecked(),
+           Nan::New(message.get(), message_size).ToLocalChecked());
+  Nan::Set(result, Nan::New("chatEntryType").ToLocalChecked(),
+           Nan::New(chat_type));
   info.GetReturnValue().Set(result);
 }
 
-void RegisterAPIs(v8::Handle<v8::Object> exports) {
-  InitFriendFlags(exports);
-  InitFriendRelationship(exports);
-  InitFriendPersonaChange(exports);
-  InitAccountType(exports);
-  InitChatEntryType(exports);
+void RegisterAPIs(v8::Local<v8::Object> target) {
+  InitFriendFlags(target);
+  InitFriendRelationship(target);
+  InitFriendPersonaChange(target);
+  InitAccountType(target);
+  InitChatEntryType(target);
 
-  Nan::Set(exports,
-           Nan::New("getFriendCount").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetFriendCount)->GetFunction());
-  Nan::Set(exports,
-           Nan::New("getFriends").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetFriends)->GetFunction());
-  Nan::Set(exports, Nan::New("getSmallFriendAvatar").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetSmallFriendAvatar)->GetFunction());
-  Nan::Set(
-      exports, Nan::New("getMediumFriendAvatar").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(GetMediumFriendAvatar)->GetFunction());
-  Nan::Set(
-      exports, Nan::New("getLargeFriendAvatar").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(GetLargeFriendAvatar)->GetFunction());
-  Nan::Set(
-      exports, Nan::New("requestUserInformation").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(RequestUserInformation)->GetFunction());
-  Nan::Set(exports, Nan::New("setListenForFriendsMessage").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(SetListenForFriendsMessages)
-               ->GetFunction());
-  Nan::Set(exports, Nan::New("replyToFriendMessage").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(ReplyToFriendMessage)
-               ->GetFunction());
-  Nan::Set(exports, Nan::New("getFriendMessage").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetFriendMessage)
-               ->GetFunction());
+  SET_FUNCTION("getFriendCount", GetFriendCount);
+  SET_FUNCTION("getFriends", GetFriends);
+  SET_FUNCTION("getSmallFriendAvatar", GetSmallFriendAvatar);
+  SET_FUNCTION("getMediumFriendAvatar", GetMediumFriendAvatar);
+  SET_FUNCTION("getLargeFriendAvatar", GetLargeFriendAvatar);
+  SET_FUNCTION("requestUserInformation", RequestUserInformation);
+  SET_FUNCTION("setListenForFriendsMessage", SetListenForFriendsMessages);
+  SET_FUNCTION("replyToFriendMessage", ReplyToFriendMessage);
+  SET_FUNCTION("getFriendMessage", GetFriendMessage);
 }
 
 SteamAPIRegistry::Add X(RegisterAPIs);

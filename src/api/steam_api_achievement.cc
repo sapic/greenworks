@@ -73,8 +73,9 @@ NAN_METHOD(GetAchievementNames) {
   auto count = static_cast<int>(SteamUserStats()->GetNumAchievements());
   v8::Local<v8::Array> names = Nan::New<v8::Array>(count);
   for (int i = 0; i < count; ++i) {
-    names->Set(
-        i, Nan::New(SteamUserStats()->GetAchievementName(i)).ToLocalChecked());
+    Nan::Set(
+        names, i,
+        Nan::New(SteamUserStats()->GetAchievementName(i)).ToLocalChecked());
   }
   info.GetReturnValue().Set(names);
 }
@@ -85,23 +86,12 @@ NAN_METHOD(GetNumberOfAchievements) {
   info.GetReturnValue().Set(steam_user_stats->GetNumAchievements());
 }
 
-void RegisterAPIs(v8::Handle<v8::Object> target) {
-  Nan::Set(target,
-           Nan::New("activateAchievement").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(ActivateAchievement)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getAchievement").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetAchievement)->GetFunction());
-  Nan::Set(target,
-           Nan::New("clearAchievement").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(ClearAchievement)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getAchievementNames").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetAchievementNames)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getNumberOfAchievements").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(
-               GetNumberOfAchievements)->GetFunction());
+void RegisterAPIs(v8::Local<v8::Object> target) {
+  SET_FUNCTION("activateAchievement", ActivateAchievement);
+  SET_FUNCTION("getAchievement", GetAchievement);
+  SET_FUNCTION("clearAchievement", ClearAchievement);
+  SET_FUNCTION("getAchievementNames", GetAchievementNames);
+  SET_FUNCTION("getNumberOfAchievements", GetNumberOfAchievements);
 }
 
 SteamAPIRegistry::Add X(RegisterAPIs);

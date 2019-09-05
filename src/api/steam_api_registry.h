@@ -16,23 +16,27 @@
        return;                   \
     } while (0);
 
-#define SET_TYPE(obj, type_name, type) \
-    obj->Set(Nan::New(type_name).ToLocalChecked(), \
-             Nan::New(type))
+#define SET_TYPE(obj, type_name, type)                                         \
+  Nan::Set(obj, Nan::New(type_name).ToLocalChecked(), Nan::New(type))
+
+#define SET_FUNCTION(function_name, function)                 \
+  Nan::Set(target, Nan::New(function_name).ToLocalChecked(),          \
+           Nan::GetFunction(Nan::New<v8::FunctionTemplate>(function)) \
+               .ToLocalChecked());
 
 namespace greenworks {
 namespace api {
 
 class SteamAPIRegistry {
  public:
-  typedef std::function<void(v8::Handle<v8::Object>)> RegistryFactory;
+  typedef std::function<void(v8::Local<v8::Object>)> RegistryFactory;
 
   static SteamAPIRegistry* GetInstance() {
     static SteamAPIRegistry steam_api_registry;
     return &steam_api_registry;
   }
 
-  void RegisterAllAPIs(v8::Handle<v8::Object> exports) {
+  void RegisterAllAPIs(v8::Local<v8::Object> exports) {
     for (const auto& factory : registry_factories_) {
       factory(exports);
     }

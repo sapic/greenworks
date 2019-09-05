@@ -68,9 +68,9 @@ NAN_METHOD(SaveFilesToCloud) {
   v8::Local<v8::Array> files = info[0].As<v8::Array>();
   std::vector<std::string> files_path;
   for (uint32_t i = 0; i < files->Length(); ++i) {
-    if (!files->Get(i)->IsString())
+    if (!Nan::Get(files, i).ToLocalChecked()->IsString())
       THROW_BAD_ARGS("Bad arguments");
-    v8::String::Utf8Value string_array(files->Get(i));
+    v8::String::Utf8Value string_array(Nan::Get(files, i).ToLocalChecked());
     // Ignore empty path.
     if (string_array.length() > 0)
       files_path.push_back(*string_array);
@@ -167,45 +167,23 @@ NAN_METHOD(GetFileNameAndSize) {
   int32 file_size = 0;
   const char* file_name =
       SteamRemoteStorage()->GetFileNameAndSize(index, &file_size);
-  result->Set(Nan::New("name").ToLocalChecked(),
-              Nan::New(file_name).ToLocalChecked());
-  result->Set(Nan::New("size").ToLocalChecked(),
-              Nan::New(file_size));
+  Nan::Set(result, Nan::New("name").ToLocalChecked(),
+           Nan::New(file_name).ToLocalChecked());
+  Nan::Set(result, Nan::New("size").ToLocalChecked(), Nan::New(file_size));
   info.GetReturnValue().Set(result);
 }
 
-void RegisterAPIs(v8::Handle<v8::Object> target) {
-  Nan::Set(target,
-           Nan::New("saveTextToFile").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(SaveTextToFile)->GetFunction());
-  Nan::Set(target,
-           Nan::New("deleteFile").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(DeleteFile)->GetFunction());
-  Nan::Set(target,
-           Nan::New("readTextFromFile").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(ReadTextFromFile)->GetFunction());
-  Nan::Set(target,
-           Nan::New("saveFilesToCloud").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(SaveFilesToCloud)->GetFunction());
-  Nan::Set(target,
-           Nan::New("isCloudEnabled").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(IsCloudEnabled)->GetFunction());
-  Nan::Set(target,
-           Nan::New("isCloudEnabledForUser").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(
-               IsCloudEnabledForUser)->GetFunction());
-  Nan::Set(target,
-           Nan::New("enableCloud").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(EnableCloud)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getCloudQuota").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetCloudQuota)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getFileCount").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetFileCount)->GetFunction());
-  Nan::Set(target,
-           Nan::New("getFileNameAndSize").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetFileNameAndSize)->GetFunction());
+void RegisterAPIs(v8::Local<v8::Object> target) {
+  SET_FUNCTION("saveTextToFile", SaveTextToFile);
+  SET_FUNCTION("deleteFile", DeleteFile);
+  SET_FUNCTION("readTextFromFile", ReadTextFromFile);
+  SET_FUNCTION("saveFilesToCloud", SaveFilesToCloud);
+  SET_FUNCTION("isCloudEnabled", IsCloudEnabled);
+  SET_FUNCTION("isCloudEnabledForUser", IsCloudEnabledForUser);
+  SET_FUNCTION("enableCloud", EnableCloud);
+  SET_FUNCTION("getCloudQuota", GetCloudQuota);
+  SET_FUNCTION("getFileCount", GetFileCount);
+  SET_FUNCTION("getFileNameAndSize", GetFileNameAndSize);
 }
 
 SteamAPIRegistry::Add X(RegisterAPIs);

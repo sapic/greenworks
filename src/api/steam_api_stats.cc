@@ -133,17 +133,12 @@ NAN_METHOD(ResetAllStats) {
   info.GetReturnValue().Set(SteamUserStats()->ResetAllStats(reset_achievement));
 }
 
-void RegisterAPIs(v8::Handle<v8::Object> target) {
-  Nan::Set(target, Nan::New("getStatInt").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetStatInt)->GetFunction());
-  Nan::Set(target, Nan::New("getStatFloat").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(GetStatFloat)->GetFunction());
-  Nan::Set(target, Nan::New("setStat").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(SetStat)->GetFunction());
-  Nan::Set(target, Nan::New("storeStats").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(StoreStats)->GetFunction());
-  Nan::Set(target, Nan::New("resetAllStats").ToLocalChecked(),
-           Nan::New<v8::FunctionTemplate>(ResetAllStats)->GetFunction());
+void RegisterAPIs(v8::Local<v8::Object> target) {
+  SET_FUNCTION("getStatInt", GetStatInt);
+  SET_FUNCTION("getStatFloat", GetStatFloat);
+  SET_FUNCTION("setStat", SetStat);
+  SET_FUNCTION("storeStats", StoreStats);
+  SET_FUNCTION("resetAllStats", ResetAllStats);
 }
 
 SteamAPIRegistry::Add X(RegisterAPIs);

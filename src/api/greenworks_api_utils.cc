@@ -60,14 +60,15 @@ NAN_METHOD(ExtractArchive) {
   info.GetReturnValue().Set(Nan::Undefined());
 }
 
-void RegisterAPIs(v8::Handle<v8::Object> exports) {
+void RegisterAPIs(v8::Local<v8::Object> exports) {
   // Prepare constructor template
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>();
   Nan::SetMethod(tpl, "createArchive", CreateArchive);
   Nan::SetMethod(tpl, "extractArchive", ExtractArchive);
   Nan::Persistent<v8::Function> constructor;
-  constructor.Reset(tpl->GetFunction());
-  Nan::Set(exports, Nan::New("Utils").ToLocalChecked(), tpl->GetFunction());
+  constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
+  Nan::Set(exports, Nan::New("Utils").ToLocalChecked(),
+           Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 SteamAPIRegistry::Add X(RegisterAPIs);
